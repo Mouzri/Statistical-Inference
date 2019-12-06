@@ -1,0 +1,181 @@
+---
+title: "Central Limit Theorem"
+author: "N.Berra"
+date: "11/28/2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+## Introduction
+The purpose of this document is to illustrate the meaning of the central limit theorem (CLT). The distribution that will be involved is the exponential distribution, and the results we get can be generalized to other ditributions (poisson, uniform, binomial....etc).  
+
+The **CLT** can be stated as follow:
+"If we get interested in the mean of a given radom variable that follows a random distribution, by taking multiple samples of a large enough size **n**, then the distribution we get by constructing the histogram of averages will be approximately normal with a **mean equal to population's mean** we sampled from, and a **standard deviation equal to the population's standard deviaton, divided by the size n of the samples**"
+
+To be more concrete, let's generate a population by taking random numbers from the exponential distribution:
+```{r}
+set.seed(100)
+dist <- rexp(300,rate = .2)
+hist( dist,breaks = 22,col="gold")  
+```  
+
+Now, let's take over and over (about 1000 times), from this distribution, let's take samples of size 40.
+```{r}
+nsim <- 1000
+rexnum <- sample(dist,size = nsim*40,replace = TRUE)
+#rexnum is now a vector that contains 400000 "exponential number".Let's reform it to a matrix
+rexnumtx <- matrix(rexnum,nrow = 1000,ncol = 40)
+#by taking the colmeans, we get a vector of 1000 length where each element is a mean number of 40 "exponetial number"
+exp_mean_vect <- rowMeans(rexnumtx)
+head(exp_mean_vect,100)
+```
+If the CLT is right then by constructing the histogram of the numeric vector above, we should see roughly a normal distribution:
+```{r}
+library(ggplot2)
+ggplot(data = data.frame(MSED=exp_mean_vect),mapping = aes(x=MSED))+
+    geom_histogram(fill="lightblue1",col="black",binwidth = .3,aes(y=stat(density)))+
+    stat_function(fun = dnorm,args = list(mean = mean(exp_mean_vect), sd = sd(exp_mean_vect)))+geom_vline(xintercept = mean(exp_mean_vect),col="red",size=2)
+```
+
+The sample ditribution is approximately normal. The red line represents the mean of the sample distribution,which is close to the population's mean (qual to 5). To compare both statistics, mean and standard deviation, we can do the following:
+```{r}
+cbind(mean(exp_mean_vect),1/.2)
+cbind(sd(exp_mean_vect),1/.2/sqrt(40))
+```
+They are pretty close. The approximation gets better when the sample size gets larger and larger.  
+
+## Part 2: Basic Inferential Data Analysis Instructions
+
+Now in the second portion of the project, we're going to analyze the ToothGrowth data in the R datasets package.
+This data gathers numbers about the response in the length of odontoblasts (cells responsible for tooth growth) in 60 guinea pigs. Each animal received one of three dose levels of vitamin C (0.5, 1, and 2 mg/day) by one of two delivery methods, orange juice or ascorbic acid (a form of vitamin C and coded as VC).
+
+```{r,echo=TRUE}
+data("ToothGrowth")
+str(ToothGrowth)
+```
+Since the variable of interest is the length, let's first see how the distribution is per dose and supplement type.
+```{r,echo=TRUE}
+library(ggplot2)
+ggplot(data = ToothGrowth,mapping = aes(x =supp,y= len))+geom_boxplot(fill=c("green","red"))
+ggplot(data = ToothGrowth,mapping = aes(x =factor(dose,levels = c(.5,1,2)),y= len))+geom_boxplot(fill=c("blue","yellow","magenta"))+xlab("dose")
+```
+
+The first figures shows the average response in length is bigger with the OJ dose than the VC. Same thing applies to the length's response per dose: giving the pigs a dose 2mg/day seems to make response higher than 1 mg/day, which is better than a .5 mg/day. This would rise the question if there's a significant difference between the procedures.  
+
+## Test of the supplement efficiency.  
+In order to check wether there's a difference between the supplements, we're going to test by taking a .05 significance level. Using the T-test by setting the var.equal and paired parameters to false, we get
+```{r,echo=TRUE}
+dt1 <- subset(ToothGrowth,supp=="VC",select = "len")
+dt2 <- subset(ToothGrowth,supp=="OJ",select = "len")
+difference <- dt2$len-dt1$len
+t.test(dt2$len,dt1$len,paired = FALSE,var.equal = FALSE)
+```
+
+The p-value is bigger than .05. Thus we still support the Null hypothesis, by which there's no difference in the means of the populations. (Another way to look at it is by the confidence interval where we see that 0 is among the value).  
+
+## Test of the dose efficiency.
+The same approach might be applied to check the efficiency of the dose
+```{r,echo=TRUE}
+dt3 <- subset(ToothGrowth,dose==.5,select = "len")
+dt4 <- subset(ToothGrowth,dose==1,select = "len")
+dt5 <- subset(ToothGrowth,dose==2,select = "len")
+t.test(dt3$len,dt4$len,paired = FALSE,var.equal = FALSE);t.test(dt4$len,dt5$len,paired = FALSE,var.equal = FALSE);t.test(dt3$len,dt5$len,paired = FALSE,var.equal = FALSE)
+    
+```
+This time the p-value is so low. Therefore we need to reject the null hypothesis n the favor of he alternative one.
+
+# Conclusion
+
+Despite the fact that the sample means are different, we cannot conclude directly that there's a significant difference in the populations. Instead we call staistical inference techniques which are a reliable way to make efficient assumptions about the true populations. As a matter of fact, the example above shows that:  
+ 1. The delivery method of vitamin C does not seem to have an influence on the length's response.  
+ 2. On the other hand, the dose has an obvious impact on the growth.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
